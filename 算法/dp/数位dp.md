@@ -239,7 +239,7 @@ int main()
 
 例题：[HDU 4734](http://acm.hdu.edu.cn/showproblem.php?pid=4734)
 
-题目给了个f(x)的定义：F(x) = An * 2n-1 + An-1 * 2n-2 + ... + A2 * 2 + A1 * 1，Ai是十进制数位，然后给出a,b求区间[0,b]内满足f(i)<=f(a)的i的个数。
+题目给了个f(x)的定义：F(x) = An * 2^(n-1) + An-1 * 2^(n-2) + ... +*1，Ai是十进制数位，然后给出a,b求区间[0,b]内满足f(i)<=f(a)的i的个数。
 
 常规想：这个f(x)计算就和数位计算是一样的，就是加了权值，所以dp[pos][sum]，这状态是基本的。a是题目给定的，f(a)是变化的不过f(a)最大好像是4600的样子。如果要memset优化就要加一维存f(a)的不同取值，那就是dp[10][4600][4600]，这显然不合法。
 
@@ -249,223 +249,63 @@ int main()
 
 仔细想想这个状态是与f(a)无关的(新手似乎很难理解)，一个状态只有在sum>=0时才满足，如果我们按常规的思想求f(i)的话，那么最后sum>=f(a)才是满足的条件。
 
+可以联想一下背包问题
+
 ```cpp
 #include<cstdio>
-
-
-
 #include<cstring>
-
-
-
 #include<iostream>
-
-
-
 #include<string>
-
-
-
  
-
-
-
 using namespace std;
-
-
-
 const int N=1e4+5;
-
-
-
 int dp[12][N];
-
-
-
 int f(int x)
-
-
-
 {
-
-
-
     if(x==0) return 0;
-
-
-
     int ans=f(x/10);
-
-
-
     return ans*2+(x%10);
-
-
-
 }
-
-
-
 int all;
-
-
-
 int a[12];
-
-
-
 int dfs(int pos,int sum,bool limit)
-
-
-
 {
-
-
-
     if(pos==-1) {return sum<=all;}
-
-
-
     if(sum>all) return 0;
-
-
-
     if(!limit && dp[pos][all-sum]!=-1) return dp[pos][all-sum];
-
-
-
     int up=limit ? a[pos] : 9;
-
-
-
     int ans=0;
-
-
-
     for(int i=0;i<=up;i++)
-
-
-
     {
-
-
-
         ans+=dfs(pos-1,sum+i*(1<<pos),limit && i==a[pos]);
-
-
-
     }
-
-
-
     if(!limit) dp[pos][all-sum]=ans;
-
-
-
     return ans;
-
-
-
 }
-
-
-
 int solve(int x)
-
-
-
 {
-
-
-
     int pos=0;
-
-
-
     while(x)
-
-
-
     {
-
-
-
         a[pos++]=x%10;
-
-
-
         x/=10;
-
-
-
     }
-
-
-
     return dfs(pos-1,0,true);
-
-
-
 }
-
-
-
 int main()
-
-
-
 {
-
-
-
     int a,ri;
-
-
-
     int T_T;
-
-
-
     int kase=1;
-
-
-
     scanf("%d",&T_T);
-
-
-
     memset(dp,-1,sizeof dp);
-
-
-
     while(T_T--)
-
-
-
     {
-
-
-
         scanf("%d%d",&a,&ri);
-
-
-
         all=f(a);
-
-
-
         printf("Case #%d: %d\n",kase++,solve(ri));
-
-
-
     }
-
-
-
     return 0;
-
-
-
 }
 ```
 
