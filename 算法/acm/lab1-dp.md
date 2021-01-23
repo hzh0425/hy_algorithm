@@ -255,6 +255,165 @@ int main()
 }
 ```
 
+## E - 不要62
+
+> 入门题。就是数位上不能有4也不能有连续的62，没有4的话在枚举的时候判断一下，不枚举4就可以保证状态合法了，所以这个约束没有记忆化的必要，而对于62的话，涉及到两位，当前一位是6或者不是6这两种不同情况我计数是不相同的，所以要用状态来记录不同的方案数。
+>
+> dp[pos] [sta]表示当前第pos位，前一位是否是6的状态，这里sta只需要去0和1两种状态就可以了，不是6的情况可视为同种，不会影响计数。
+
+```cpp
+#include<iostream>
+#include<cstdio>
+#include<cstring>
+#include<string>
+using namespace std;
+typedef long long ll;
+int a[20];
+int dp[20][2];
+int dfs(int pos,int pre,int sta,bool limit)
+{
+    if(pos==-1) return 1;
+    if(!limit && dp[pos][sta]!=-1) return dp[pos][sta];
+    int up=limit ? a[pos] : 9;
+    int tmp=0;
+    for(int i=0;i<=up;i++)
+    {
+        if(pre==6 && i==2)continue;
+        if(i==4) continue;//都是保证枚举合法性
+        tmp+=dfs(pos-1,i,i==6,limit && i==upper);
+    }
+    if(!limit) dp[pos][sta]=tmp;
+    return tmp;
+}
+int solve(int x)
+{
+    int pos=0;
+    while(x)
+    {
+        a[pos++]=x%10;
+        x/=10;
+    }
+    return dfs(pos-1,-1,0,true);
+}
+int main()
+{
+    int le,ri;
+    //memset(dp,-1,sizeof dp);可优化
+    while(~scanf("%d%d",&le,&ri) && le+ri)
+    {
+        memset(dp,-1,sizeof dp);
+        printf("%d\n",solve(ri)-solve(le-1));
+    }
+    return 0;
+}
+```
+
+ 
+
+入门就不多讲了，开始讲常用优化吧！
+
+
+
+这一点是一个数位特点，使用的条件是：约束条件是每个数自身的属性，而与输入无关。
+
+具体的：上一题不要62和4，这个约束对每一个数都是确定的，就是说任意一个数满不满足这个约束都是确定，比如444这个数，它不满足约束条件，不管你输入的区间是多少你都无法改变这个数不满足约束这个事实，这就是数自身的属性（我们每组数据只是在区间计数而已，只能说你输入的区间不包含444的话，我们就不把它统计在内，而无法改变任何事实）。
+
+由此，我们保存的状态就可以一直用(注意还有要limit，不同区间是会影响数位在有限制条件下的上限的)
+
+这点优化就不给具体题目了，这个还有进一步的扩展。不过说几个我遇到的简单的约束：
+
+1.求数位和是10的倍数的个数,这里简化为数位sum%10这个状态，即dp[pos][sum]这里10 是与多组无关的，所以可以memset优化，不过注意如果题目的模是输入的话那就不能这样了。
+
+2.求二进制1的数量与0的数量相等的个数，这个也是数自身的属性。
+
+3.。。。。。
+
+还是做题积累吧。搞懂思想！
+
+下面介绍的方法就是要行memset优化，把不满足前提的通过修改，然后优化。
+
+介绍之前,先说一种较为笨拙的修改，那就是增加状态，前面讲limit的地方说增加一维dp[pos][state][limit]，能把不同情况下状态分别记录(不过这个不能memset放外面)。基于这个思想，我们考虑：约束为数位是p的倍数的个数，其中p数输入的，这和上面sum%10类似，但是dp[pos][sum]显然已经不行了，每次p可能都不一样，为了强行把memset提到外面加状态dp[pos][sum][p]，对于每个不同p分别保存对应的状态。这里前提就比较简单了，你dp数组必须合法，p太大就G_G了。所以对于与输入有关的约束都可以强行增加状态(这并不代表能ac，如果题目数据少的话就随便你乱搞了)
+
+## F - F(x)
+
+例题：[HDU 4734](http://acm.hdu.edu.cn/showproblem.php?pid=4734)
+
+题目给了个f(x)的定义：F(x) = An * 2^(n-1) + An-1 * 2^(n-2) + ... +*1，Ai是十进制数位，然后给出a,b求区间[0,b]内满足f(i)<=f(a)的i的个数。
+
+常规想：这个f(x)计算就和数位计算是一样的，就是加了权值，所以dp[pos][sum]，这状态是基本的。a是题目给定的，f(a)是变化的不过f(a)最大好像是4600的样子。如果要memset优化就要加一维存f(a)的不同取值，那就是dp[10][4600][4600]，这显然不合法。
+
+这个时候就要用减法了，dp[pos][sum]，sum不是存当前枚举的数的前缀和(加权的)，而是枚举到当前pos位，后面还需要凑sum的权值和的个数，
+
+也就是说初始的是时候sum是f(a),枚举一位就减去这一位在计算f(i)的权值，那么最后枚举完所有位 sum>=0时就是满足的，后面的位数凑足sum位就可以了。
+
+仔细想想这个状态是与f(a)无关的(新手似乎很难理解)，一个状态只有在sum>=0时才满足，如果我们按常规的思想求f(i)的话，那么最后sum>=f(a)才是满足的条件。
+
+可以联想一下背包问题
+
+```cpp
+#include<cstdio>
+#include<cstring>
+#include<iostream>
+#include<string>
+ 
+using namespace std;
+const int N=1e4+5;
+int dp[12][N];
+int f(int x)
+{
+    if(x==0) return 0;
+    int ans=f(x/10);
+    return ans*2+(x%10);
+}
+int all;
+int a[12];
+int dfs(int pos,int sum,bool limit)
+{
+    if(pos==-1) {return sum<=all;}
+    if(sum>all) return 0;
+    if(!limit && dp[pos][all-sum]!=-1) return dp[pos][all-sum];
+    int up=limit ? a[pos] : 9;
+    int ans=0;
+    for(int i=0;i<=up;i++)
+    {
+        ans+=dfs(pos-1,sum+i*(1<<pos),limit && i==a[pos]);
+    }
+    if(!limit) dp[pos][all-sum]=ans;
+    return ans;
+}
+int solve(int x)
+{
+    int pos=0;
+    while(x)
+    {
+        a[pos++]=x%10;
+        x/=10;
+    }
+    return dfs(pos-1,0,true);
+}
+int main()
+{
+    int a,ri;
+    int T_T;
+    int kase=1;
+    scanf("%d",&T_T);
+    memset(dp,-1,sizeof dp);
+    while(T_T--)
+    {
+        scanf("%d%d",&a,&ri);
+        all=f(a);
+        printf("Case #%d: %d\n",kase++,solve(ri));
+    }
+    return 0;
+}
+```
+
+ 
+
+减法的艺术！！！
+
+## H-XHXJ的LIS
+
 ## K - GAME
 
 有N个房间。房间的连接就像一棵树。换句话说，您只能以一种方式去任何其他房间。每个房间都有一份为您准备的礼物，如果您去房间，就可以得到这份礼物。但是，某些房间也有陷阱。收到礼物后，您可能会被困住。外出一个房间后，您将无法再回到它。您可以选择在任何房间开始，而当您没有空间离开或被困C时间时，游戏结束。现在，您想知道可获得的礼物最大总价值是多少。
@@ -279,6 +438,7 @@ int main()
 123 1
 0 2
 2 1
+
 3 2
 23 0
 12 0
@@ -293,3 +453,44 @@ int main()
 146
 158
 ```
+
+- 状态
+
+当前在哪个房间i,房间困住的时间j
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
