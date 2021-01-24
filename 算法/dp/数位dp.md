@@ -102,53 +102,27 @@ p.s.当然没有这么绝对的说……因题而异的说……
 ### 模板
 
 ```cpp
-typedef long long ll;
-int a[20];
-ll dp[20][state];//不同题目状态不同
-ll dfs(int pos,/*state变量*/,bool lead/*前导零*/,bool limit/*数位上界变量*/)//不是每个题都要判断前导零
-{
-    //递归边界，既然是按位枚举，最低位是0，那么pos==-1说明这个数我枚举完了
-    if(pos==-1) return 1;/*这里一般返回1，表示你枚举的这个数是合法的，那么这里就需要你在枚举时必须每一位都要满足题目条件，也就是说当前枚举到pos位，一定要保证前面已经枚举的数位是合法的。不过具体题目不同或者写法不同的话不一定要返回1 */
-    //第二个就是记忆化(在此前可能不同题目还能有一些剪枝)
-    if(!limit && !lead && dp[pos][state]!=-1) return dp[pos][state];
-    /*常规写法都是在没有限制的条件记忆化，这里与下面记录状态是对应，具体为什么是有条件的记忆化后面会讲*/
-    int up=limit?a[pos]:9;//根据limit判断枚举的上界up;
-    ll ans=0;
-    //开始计数
-    for(int i=0;i<=up;i++)//枚举，然后把不同情况的个数加到ans就可以了
-    {
-        if() ...
-        else if()...
-        ans+=dfs(pos-1,/*状态转移*/,lead && i==0,limit && i==a[pos]) //最后两个变量传参都是这样写的
-        /*这里还算比较灵活，不过做几个题就觉得这里也是套路了
-        大概就是说，我当前数位枚举的数是i，然后根据题目的约束条件分类讨论
-        去计算不同情况下的个数，还有要根据state变量来保证i的合法性，比如题目
-        要求数位上不能有62连续出现,那么就是state就是要保存前一位pre,然后分类，
-        前一位如果是6那么这意味就不能是2，这里一定要保存枚举的这个数是合法*/
+ll dfs(int pos,int state,...,bool lead,bool limit){
+    if(!pos) return ...; //返回填完的数是否满足条件
+    //当前状态已经搜索过，直接使用dp值
+    if(dp[pos][state]...!=-1&&!limit&&!lead) return dp[pos][state]...;
+    ll ret=0; //暂时记录当前方案数
+    int bound=limit?a[pos]:9; //当前位能取到的最大值
+    for(int i=0;i<=bound;i++){
+        //有前导0并且当前位也是前导0
+        if(!i&&lead) ret+=dfs(pos-1,...,1,i==bound&&limit);
+        //有前导0但当前位不是前导0，当前位就是最高位
+        else if(i&&lead) ret+=dfs(pos-1,...,0,i==bound&&limit); 
+        else if(...) ...;
     }
-    //计算完，记录状态
-    if(!limit && !lead) dp[pos][state]=ans;
-    /*这里对应上面的记忆化，在一定条件下时记录，保证一致性，当然如果约束条件不需要考虑lead，这里就是lead就完全不用考虑了*/
-    return ans;
+    if(!limit&&!lead) dp[pos][state]...=ret; //当前状态方案数记录
+    return ret;
 }
-ll solve(ll x)
-{
-    int pos=0;
-    while(x)//把数位都分解出来
-    {
-        a[pos++]=x%10;//个人老是喜欢编号为[0,pos),看不惯的就按自己习惯来，反正注意数位边界就行
-        x/=10;
-    }
-    return dfs(pos-1/*从最高位开始枚举*/,/*一系列状态 */,true,true);//刚开始最高位都是有限制并且有前导零的，显然比最高位还要高的一位视为0嘛
-}
-int main()
-{
-    ll le,ri;
-    while(~scanf("%lld%lld",&le,&ri))
-    {
-        //初始化dp数组为-1,这里还有更加优美的优化,后面讲
-        printf("%lld\n",solve(ri)-solve(le-1));
-    }
+ll solve(ll x){
+    len=0; //数位长度
+    while(x) a[++len]=x%10,x/=10;
+    memset(dp,-1,sizeof(dp)); //初始化-1（因为方案数可能为0）
+    return dfs(len,...,1,1);
 }
 ```
 
@@ -785,7 +759,7 @@ int main()
 
  
 
-# 新的领域--计数转求和
+### 新的领域--计数转求和
 
 [HDU 4507](http://acm.hdu.edu.cn/showproblem.php?pid=4507)
 
@@ -1250,3 +1224,45 @@ int main()
 ```
 
  
+
+### [ 数字 1 的个数](https://leetcode-cn.com/problems/number-of-digit-one/)
+
+![image-20210124171235643](https://gitee.com/zisuu/picture/raw/master/img/20210124171235.png)
+
+```
+class Solution {
+public:
+    int ans=0;
+    int arr[24]={0};
+    vector<vector<int>> dp;
+    int dfs(int pos,int  cnt,int limit)
+    {
+        if(pos==-1)return cnt;
+        if(dp[pos][cnt]!=-1&&!limit)return dp[pos][cnt];
+        int upper=limit?arr[pos]:9;
+        int ans=0;
+        for(int i=0;i<=upper;i++)
+        {
+            ans+=dfs(pos-1,cnt+(i==1),i==upper&&limit);
+        }
+        if(!limit)dp[pos][cnt]=ans;
+        return ans;
+    }
+    int getLow(int n)
+    {
+        int m=n;
+        int cnt=0;
+        while(m)
+        {
+            arr[cnt++]=m%10;
+            m/=10;
+        }
+        return dfs(cnt-1,0,1);
+    }
+    int countDigitOne(int n) {
+        dp = vector<vector<int>>(24, vector<int>(1000, -1));
+        return getLow(n);
+    }
+};
+```
+

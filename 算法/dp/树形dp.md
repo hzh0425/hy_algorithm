@@ -236,39 +236,58 @@ int main()
 
 13
 
+状态：
+
+当前结点，选m门课
+
+![image-20210124161010005](https://gitee.com/zisuu/picture/raw/master/img/20210124161010.png)
+
 ```cpp
-#include<iostream>
-#include<algorithm>
-#include<queue>
-#include<cstdio>
-#include<cstring>
+#include <bits/stdc++.h>
 using namespace std;
-vector<int>edge[1000];
-int val[1000],dp[1000][1000],n,m;
-void dfs(int u,int t)
+class node{
+public:
+    int from;
+    int son;
+}arr[301];
+int head[301]={0};
+int dp[301][301]={0};
+int val[301]={0};
+int m,n;
+int cnt=0;
+void add(int u,int v)
 {
-    if (t<=0) return ;
-    for (int i=0;i<edge[u].size(); i++)
+    arr[++cnt].son=v;arr[cnt].from=head[u];head[u]=cnt;
+}
+void solve(int fa)
+{
+    for(int i=head[fa];i;i=arr[i].from)
     {
-        int v = edge[u][i];
-        for (int k=0; k<t; ++k) 
-            dp[v][k] = dp[u][k]+val[v];
-        dfs(v,t-1);
-        for (int k=1; k<=t; ++k) 
-            dp[u][k] = max(dp[u][k],dp[v][k-1]);
+        int v=arr[i].son;
+        if(v==fa)continue;
+        solve(v);
+        //0-1背包，倒叙
+        for(int j=m+1;j>=1;j--)
+        {
+            for(int k=1;k<j;k++)
+            {
+                //可以理解为，在某个子树上选k<剩下在另外子树上选
+                dp[fa][j]=max(dp[fa][j],dp[v][k]+dp[fa][j-k]);
+            }
+        }
     }
 }
 int main()
 {
-    scanf("%d%d",&n,&m);
-    for(int i=1,a;i<=n;i++)
+    cin>>n>>m;
+    int fa;
+    for(int i=1;i<=n;i++)
     {
-        scanf("%d%d",&a,&val[i]);
-        edge[a].push_back(i);
+        cin>>fa>>dp[i][1];
+        add(fa,i);
     }
-    dfs(0,m);
-    printf("%d",dp[0][m]);
-    return 0;
+    solve(0);
+    cout<<dp[0][m+1];
 }
 ```
 
