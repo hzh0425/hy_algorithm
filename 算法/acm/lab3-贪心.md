@@ -220,9 +220,261 @@ int main()
 }
 ```
 
+## D - Game Prediction
+
+假设有M个人，包括你，在玩一种特殊的纸牌游戏。一开始，每个玩家收到N张卡片。一张牌的pip是一个最大N*M的正整数。没有两张相同的牌。在一轮游戏中，每个玩家选择一张纸牌与其他纸牌进行比较。牌尖最大的玩家赢得这一轮，然后下一轮开始。N轮之后，当每个牌手的牌都被选中时，赢得最多回合的牌手就是这场游戏的赢家给定一开始收到的vour卡片，编写一个程序告诉你在整个游戏中至少可以赢得的最大回合数
+
+Sample Input
+
+```
+2 5
+1 7 2 10 9
+
+6 11
+62 63 54 66 65 61 57 56 50 53 48
+
+0 0
+```
+
+Sample Output
+
+```
+Case 1: 2
+Case 2: 4
+```
+
+**基本思路：**
+
+从题目就可以看出来，至少能赢多少局，从贪心的角度，每个人肯定选最大的出
+
+结果无非两种，我赢，敌人赢
+
+所以可以分成我和敌人，而不用管有多少个人
+
+对于当前这局我能不能必赢，取决于之前还有没有比我大的数
+
+如果有，那这局就抵消掉了，没有，就说明我可以赢
+
+```
+using namespace std;
+int card[1200]={0};
+int main()
+{
+    int n,m;
+    int task=0;
+    while(cin>>n>>m&&n&&m)
+    {
+        int j=0;
+        memset(card,0,sizeof(card));
+        for(int i=0;i<m;i++)
+        {
+            cin>>j;
+            card[j]++;
+        }
+        int ans=0,compareMax=0;
+        for(int i=n*m;i>0;i--)
+        {
+            if(!card[i])compareMax++;
+            else{
+                if(!compareMax)ans++;
+                else compareMax--;
+            }
+        }
+        printf("Case %d: %d\n",++task,ans);
+    }
+}
+```
+
+## E - Radar Installation（区间交集问题）
+
+假设海岸是一条无限的直线。海岸的一边是陆地，另一边是海洋。每个小岛都是海边的一个点。而位于海岸边的anv雷达装置只能覆盖d个距离，因此半径装置可以覆盖海面上的一个岛屿，两者之间的距离最多为d。我们使用笛卡尔坐标系统，用x轴来定义滑行。海这边在x轴上方。以及下面的陆地面。已知海面上每个岛屿的位置，以及雷达装置覆盖的距离，vour的任务是编写一个程序，找出覆盖所有岛屿的最小数量的雷达装置。注意，岛屿的位置是由它的x-y坐标表示的
+
+![img](https://gitee.com/zisuu/picture/raw/master/img/20210129150535.jpeg)
 
 
 
+```
+3 2
+1 2
+-3 1
+2 1
+
+2
+```
+
+这是一道典型的区间调度问题，但是要先对题目进行转化
+
+对于当前的点p,想要覆盖它，有一个范围：
+【p-x,p+x】[x=d^2-y^2]
+
+所以就转化成，有多少个相交的区间了。。
+
+求相交区间有两种方法：
+
+- 对end排序，比较简单
+
+```
+#include<algorithm>
+#include<iostream>
+#include<cstdio>
+#include<cmath>
+using namespace std;
+struct Node{
+    double s,e;
+};
+int n,d,k;
+Node points[2000];
+int cmp(Node a,Node b){
+    return a.e<b.e;
+}
+int findMinMax(int x, int y){
+    if(y>d)return 0;
+    double m=sqrt(float(d*d-y*y));
+    points[k].s=x-m;points[k].e=x+m;k++;
+    return 1;
+}
+int main(){int t,x,y,flag,temp,num,task=0;
+    while(scanf("%d%d",&n,&d),n||d){
+        k=0;flag=1;temp=0;num=1;task++;
+        for(int i=0;i<n;i++){
+            scanf("%d%d",&x,&y);
+            t= findMinMax(x, y);
+            if(!t)flag=0;
+        }
+        if(!flag)
+        {
+            printf("Case %d: %d\n",task,-1);
+            continue;
+        }
+        sort(points, points + k, cmp);
+        for(int i=0;i<k;i++){
+            if(points[i].s > points[temp].e)temp=i,num++;
+        }
+        printf("Case %d: %d\n",task,num);
+    }
+    return 0;
+}
+```
 
 
+
+- 对start排序，要分情况讨论
+
+![这里写图片描述](https://img-blog.csdn.net/20180811195826559?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3NzA4NzAy/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+```
+       for(int i = 1;i < n;i++){
+            if(radar[i].start >= l && radar[i].end <= r){//对应情况1
+                l = radar[i].start;
+                r = radar[i].end;
+            }
+            else if(radar[i].start <= r && radar[i].end >= r)//对应情况2
+                l = radar[i].start;
+            else if(radar[i].start > r){//对应情况3
+                l = radar[i].start;
+                r = radar[i].end;
+                num++;
+            }
+        }
+```
+
+## F - Communication System(枚举)
+
+我们已收到来自Pizoor通信公司的一份特殊通信系统的订单。该系统由多个设备组成。对于每个设备，我们可以从几个制造商中自由选择。来自两个制造商的相同设备在最大带宽和价格上有所不同。总带宽(B)是指通信系统中所选设备带宽的最小值，而总价格(P)是所有所选设备价格的总和。我们的目标是为每个设备选择一个制造商，以最大化B/P。
+
+输入文件的第一行包含一个单一的整数t (1 st s 10)，测试用例的数量，后面是每个测试用例的输入数据。每个测试用例开始一行包含一个整数n (1 sn 100)通信系统中设备的数量,其次是n行以下格式:i线(1 si sn)始于mi (1 s mi s 100),制造商的第i个设备的数量,其次是mi对正整数在同一行,每个指示设备的带宽和价格分别对应于一个制造商。跳跃您的程序应该为每个测试用例生成一行，其中包含一个单独的数字，这是测试用例的最大可能B/P。将输出的数字四舍五入到小数点后的3位。
+
+
+
+> 枚举，将带宽的范围限制在所有带宽的最小和最大值之间。关键在于降低复杂度。由于B/P中间的B，P两个都是变量，首先固定住B，然后对于每个设备中寻找大于B时的最小价格，然后把所有设备的价格加起来，求最大值。
+>
+
+```
+# include<stdio.h>
+# include<algorithm>
+using namespace std;
+ 
+int a[200][200],b[200][200];
+int num[200];
+ 
+int main()
+{
+	int t,i,j;
+	while(scanf("%d",&t)!=EOF)
+	{
+		while(t--)
+		{
+			int n;
+			scanf("%d",&n);
+			int maxv=0,minv=123123123;
+ 
+			for(i=0;i<n;i++)
+			{
+				scanf("%d",&num[i]);
+				for(j=0;j<num[i];j++)
+				{
+					scanf("%d%d",&a[i][j],&b[i][j]);   
+					if(a[i][j]>maxv)
+						maxv=a[i][j];
+					if(a[i][j]<minv)
+						minv=a[i][j];
+				}
+			}
+			
+			double ans=0.0;
+			for(int B=minv;B<=maxv;B++)
+			{
+				int sum=0;
+				for(i=0;i<n;i++)
+				{
+				  int minCost=123123123;
+				  for(j=0;j<num[i];j++)
+				  {
+				    if(a[i][j]>=B&&b[i][j]<minCost)
+						minCost=b[i][j];
+				  }
+				   sum+=minCost;
+				}
+                
+				if(1.0*B/sum>ans)
+					ans=1.0*B/sum;
+			}
+ 
+			printf("%.3lf\n",ans);
+			
+		}	
+	}
+	return 0;
+}
+```
+
+## H - Painter
+
+![image-20210131151515746](https://gitee.com/zisuu/picture/raw/master/img/20210131151515.png)
+
+思路：贪心。需要的灰色颜料用需要量最小的颜料合成，所以每次用最少的三种颜色合成1ml灰色。因为n很小，所以每合成1ml快排一次。
+
+```
+using namespace std;
+int nums[15]={0};
+int n;
+int main(){
+    while(cin>>n&&n)
+    {
+        for (int i = 0; i <= n ; ++i) {
+            cin>>nums[i];
+        }
+        int gray = nums[n];
+        while(gray>0)
+        {
+            sort(nums,nums+n);
+            for(int i=0;i<3;i++)nums[i]++;
+            gray--;
+        }
+        sort(nums,nums+n);
+        int maxn=nums[n-1];
+        cout<<maxn/50+(maxn%50>0?1:0)<<endl;
+    }
+}
+```
 
