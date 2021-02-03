@@ -478,3 +478,83 @@ int main(){
 }
 ```
 
+## I - Crossing River
+
+N个人想要过河,每个人过河的速度有快又慢,每次最多两个人过河,取决于慢的那个人的速度,问:
+
+最少需要多少时间
+
+- 贪心思想:每次想办法,借助最快的那两个人,将最慢的那两个人送过河
+
+```
+将过河时间由小到大排序后，取a0,a1,ai-1,ai，这
+
+
+四个人组成一组。有两种方案 1.a0先送ai过河然后回来
+
+，再送ai-1，再回来。2. a0和a1过河，a0回去，然后
+
+ai，ai-1过河，a1将船开回去。选择用时少的，
+
+然后重复这个过程
+```
+
+```
+#include <iostream>
+#include <math.h>
+#include <algorithm>
+#include <cstring>
+using namespace std;
+int speed[1010]={0};
+int n;
+void handle(int num,int & sumn)
+{
+    if(num==1)
+    {
+        sumn+=speed[0];
+    }
+    else if (num==2)
+    {
+        sumn+=speed[1];
+    }
+    else if(num==3)
+    {
+        sumn+=speed[0]+speed[1]+speed[2];
+    }
+}
+int main()
+{
+    int task;
+    cin>>task;
+    while(task--)
+    {
+        cin>>n;
+        for (int i = 0; i <n ; ++i) {
+            cin>>speed[i];
+        }
+        sort(speed,speed+n);
+        int sumn=0;
+        if(n<=3)
+            handle(n,sumn);
+        else
+        {
+            int i=0;
+            for( i=n-1;i>=3;i-=2)
+            {
+                int t1 = speed[1] + speed[0] + speed[i] + speed[1];
+                int t2 = speed[i] + speed[0]*2 + speed[i-1];
+                if(t1<t2)
+                {
+                    sumn+=t1;
+                }
+                else {
+                    sumn+=t2;
+                }
+            }
+            handle(i+1,sumn);
+        }
+        cout<<sumn<<endl;
+    }
+}
+```
+

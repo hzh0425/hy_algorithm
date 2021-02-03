@@ -225,15 +225,67 @@ int main() {
 }
 ```
 
+## D - Equation Again
+
+![image-20210202151522631](C:\Users\86180\AppData\Roaming\Typora\typora-user-images\image-20210202151522631.png)
+
+Input
+
+```
+Each line will contain one number Y(Y >= 1). Process to end of file.
+```
+
+Output
+
+```
+For each case, output X on one line, accurate to five decimal places, if there are many answers, output them in increasing order, if there is no answer, just output “Happy to Women’s day!”.
+```
+
+Sample Input
+
+```
+1
+```
+
+Sample Output
+
+```
+2.71828
+```
 
 
 
 
 
+## G - The Frog's Games
 
 
 
+一年一度的青蛙王国运动会又开始了。最著名的游戏是铁人三项铁人三项的一个测试是跳跃。这个项目要求青蛙运动员跳过这条河。河流的宽度为L (1<= L<= 1000000000)。有n (o<=n <= 500000)块石头从河的一边到另一边排成直线。青蛙只会跳过河，却能落在石头上。如果他们掉进河里，他们就会都出来了。青蛙被要求最多跳m (1<= m <= n+1)次。现在青蛙们想知道他们是否想要跳过河，至少他们应该有什么能力。(这是青蛙最长的跳跃距离)。
 
+Input
 
+The input contains several cases. The first line of each case contains three positive integer L, n, and m.
+Then n lines follow. Each stands for the distance from the starting banks to the nth stone, two stone appear in one place is impossible.
 
+Output
 
+For each case, output a integer standing for the frog's ability at least they should have.
+
+Sample Input
+
+```
+6 1 2
+2
+25 3 3
+11 
+2
+18
+```
+
+Sample Output
+
+```
+4
+11
+```
