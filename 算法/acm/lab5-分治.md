@@ -370,9 +370,99 @@ int main(){
 } 
 ```
 
+acm分治专题前四题题解,l
+
+### 2.点分治
+
+```
+#include <iostream>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <vector>
+#include <algorithm>
+using namespace std;
+const int N = 1e5+20, M = 1e2+10, mod = 1e9+7, inf = 1e9+1000;
+typedef long long ll;
+
+int n,m,root,t,ans,allnode,siz[N],K,head[N],vis[N],d[N];
+int deep[N];
+int f[N];
+
+struct edg{int to,next,v;}e[N * 4];
+void ADD_EDGE(int u, int v, int w) { e[t].to=v;e[t].next=head[u];e[t].v=w;head[u]=t++;}
 
 
+void getroot(int x,int fa) {
+    siz[x] = 1;
+    f[x] = 0;
+    for(int i=head[x];i;i=e[i].next) {
+        int to = e[i].to;
+        if(to == fa || vis[to]) continue;
+        getroot(to,x);
+        siz[x] += siz[to];
+        f[x] = max(f[x] , siz[to]);
+    }
+    f[x] = max(allnode-siz[x] , f[x]);
+    if(f[x] < f[root]) root = x;
+}
 
+void cal_dist(int x, int fa) {//获取子树所有节点与根的距离
+    deep[++deep[0]] = d[x];
+    for(int i=head[x];i;i=e[i].next) {
+        int to = e[i].to;
+        if(to == fa || vis[to]) continue;
+        d[to] = d[x] + e[i].v;
+        cal_dist(to, x);
+    }
+}
+int cal(int x,int now) {//计算当前以重心x的子树下，所有情况的答案
+    d[x]=now;deep[0]=0;
+    cal_dist(x, 0);
+    int size=deep[0];
+    sort(deep+1,deep+size+1);
+    int all = 0;
+    for(int l=1,r=size;l<r;) {
+        if(deep[l]+deep[r] <= K) {all += r-l;l++;}
+        else r--;
+    }
+    return all;
+}
+
+void calculate(int x) {//以x为重心进行计算
+    vis[x] = 1;
+    ans+=cal(x,0);
+    for(int i=head[x];i;i=e[i].next) {
+        int to = e[i].to;
+        if(vis[to]) continue;
+        ans -= cal(to,e[i].v);
+        allnode = siz[to];
+        root=0;
+        getroot(to,x);
+        calculate(root);
+    }
+}
+
+int main()
+{
+    while(~scanf("%d%d",&n,&K)) {
+        if(!n&&!m) break;
+        memset(head,0,sizeof(head));
+        memset(vis,0,sizeof(vis));
+        t = 1;
+        for(int i=1;i<n;i++) {
+            int a,b,c;
+            scanf("%d%d%d",&a,&b,&c);
+            ADD_EDGE(a, b, c) , ADD_EDGE(b, a, c);
+        }
+        root=ans=0;
+        allnode=n;f[0]=inf;
+        getroot(1,0);
+        calculate(root);
+        printf("%d\n",ans);
+    }
+}
+```
 
 
 
