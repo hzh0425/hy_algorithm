@@ -241,6 +241,156 @@ int main()
 }
 ```
 
+## E - Expedition(贪心+优先队列)
+
+> 一群牛抓住一辆卡车，冒险向丛林深处探险。牛是相当糟糕的司机，不幸的是，它们碾过了一块石头，戳破了卡车的油箱。现在卡车每行驶一单位距离就会漏出一单位燃料。要修理卡车，牛需要开到最近的城镇(沿着一条长长的、蜿蜒的道路不超过1000个单位的距离)。在这条道路上，在城镇和卡车的当前位置之间，有N个(1<=N <= 10,000)燃料停站，奶牛可以停下来获取额外的燃料(每个停站1.100单位)丛林对人类来说是一个危险的地方，对牛来说尤其危险。因此，奶牛们希望在去城镇的路上尽可能少地停下来加油。福图塔特尔夫，他们卡车上的油箱容量很大，可以装的油量实际上是没有限制的。卡车目前距离城镇有L个单位的距离，有P个单位的燃料(1 <=P<=)1000000).确定到达城镇所需的最少停车次数，或者奶牛是否根本无法到达城镇
+>
+
+A group of cows grabbed a truck and ventured on an expedition deep into the jungle. Being rather poor drivers, the cows unfortunately managed to run over a rock and puncture the truck's fuel tank. The truck now leaks one unit of fuel every unit of distance it travels.
+
+To repair the truck, the cows need to drive to the nearest town (no more than 1,000,000 units distant) down a long, winding road. On this road, between the town and the current location of the truck, there are N (1 <= N <= 10,000) fuel stops where the cows can stop to acquire additional fuel (1..100 units at each stop).
+
+The jungle is a dangerous place for humans and is especially dangerous for cows. Therefore, the cows want to make the minimum possible number of stops for fuel on the way to the town. Fortunately, the capacity of the fuel tank on their truck is so large that there is effectively no limit to the amount of fuel it can hold. The truck is currently L units away from the town and has P units of fuel (1 <= P <= 1,000,000).
+
+Determine the minimum number of stops needed to reach the town, or if the cows cannot reach the town at all.
+
+大概意思就是选择最少的停战次数进行加油,最后可以到达重点
+
+挑战书里很经典的一道题 用优先队列
+最终要的思想就是把每次路过一个加油站加或不加的决策转化为每次经过加油站就获得一次加油的机会，这样用一个优先队列来保存这些加油机会，然后每次需要加油再取出最大的一个 稳了
+
+```
+#include <iostream>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <vector>
+#include <algorithm>
+#include<queue>
+using namespace std;
+int n;
+int target=0;
+int initial=0;
+class node{
+public:
+    int miles;
+    int fuels;
+    node(int id,int fi)
+    {
+        this->miles=id;
+        this->fuels=fi;
+    }
+    node(){}
+    bool operator < (node n1) const
+    {
+        return miles<n1.miles;
+    }
+};
+node stops[10000005];
+int main()
+{
+    cin>>n;
+    int m,f;
+
+    for (int i=n-1;i>=0;i--) {
+        cin>>m>>f;
+        stops[i]=node(m,f);
+    }
+    cin>>target>>initial;
+    stops[n]=node(target,0);
+    for (int i=0;i<n;i++) {
+        stops[i].miles=target-stops[i].miles;
+    }
+    sort(stops,stops+n);
+    priority_queue<int> chances;
+    int ans=0,tank=initial,cur=0;
+    for(int i=0;i<=n;i++)
+    {
+        //cout<<tank<<" "<<stops[i].miles<<endl;
+        int dist = stops[i].miles-cur;
+        while(tank<dist)
+        {
+            //需要加油
+            if(chances.empty())
+            {
+                cout<<"-1";return 0;
+            }
+            ans++;
+            tank+=chances.top();
+            chances.pop();
+        }
+        tank-= dist;
+        chances.push(stops[i].fuels);
+        cur=stops[i].miles;
+    }
+    cout<<ans;
+
+}
+```
+
+
+
+## F - The kth great number (top k题目)
+
+这种题目就是要想好,到底要维护最小堆,还是最大堆
+
+比如本题,I的时候加入一个数,Q的时候返回第K大的元素
+
+一般我们都会维护一个k大小的窗口,存放k个元素
+
+要返回一个数肯定只能队首返回!
+
+那就相当于维护一个小顶堆,队首就是第k大的(最小的那个)
+
+```
+int main()
+{
+    while(cin>>n>>k)
+    {
+        priority_queue<node>q;
+        char c;
+        getchar();
+        int num;
+        for (int i = 0; i <n ; ++i) {
+            c=getchar();
+            if(c=='I')
+            {
+                cin>>num;
+                q.push(node(num));
+                if(q.size()>k)q.pop();
+            } else
+            {
+                cout<<q.top().nums<<endl;
+            }
+            getchar();
+        }
+    }
+}
+```
+
+## H - Stones
+
+Because of the wrong status of the bicycle, Sempr begin to walk east to west every morning and walk back every evening. Walking may cause a little tired, so Sempr always play some games this time.
+There are many stones on the road, when he meet a stone, he will throw it ahead as far as possible if it is the odd stone he meet, or leave it where it was if it is the even stone. Now give you some informations about the stones on the road, you are to tell me the distance from the start point to the farthest stone after Sempr walk by. Please pay attention that if two or more stones stay at the same position, you will meet the larger one(the one with the smallest Di, as described in the Input) first.
+
+> 因为自行车的位置不对，Sempr开始每天早上从东到西走，晚上走回来。走路可能会有点累，所以这次Sempr总是玩一些游戏。路上有很多石头，当他遇到一块石头时，如果是他遇到的奇数块石头，他会把它扔得尽可能远，如果是偶数块石头，他会把它留在原来的地方。现在我给你一些关于路上石头的信息，你要告诉我从起点到最远的石头的距离。请注意，如果两个或两个以上的石头在同一位置，你会先碰到较大的那个(Di最小的那个，如输入中所述)。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
